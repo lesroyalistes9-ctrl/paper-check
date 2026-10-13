@@ -1,0 +1,896 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PaperCheck — Your PAPER, in numbers</title>
+<meta name="description" content="Check your Papertrade wallet, simulate the real cost of farming PAPER and read the protocol's numbers: losses, rewards, mint rate, account distribution.">
+<meta name="theme-color" content="#EBE0CC">
+<link rel="icon" type="image/png" sizes="32x32" href="/icon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="canonical" href="https://paper-check.xyz/">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://paper-check.xyz/">
+<meta property="og:title" content="PaperCheck — What does your PAPER really earn?">
+<meta property="og:description" content="Check your Papertrade wallet, simulate the real cost of farming PAPER and read the protocol's real numbers, straight from the chain.">
+<meta property="og:image" content="https://paper-check.xyz/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="PaperCheck — What does your PAPER really earn?">
+<meta name="twitter:description" content="Wallet check, farm simulator, protocol stats and account distribution for Papertrade. On-chain, independent.">
+<meta name="twitter:image" content="https://paper-check.xyz/og.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#EBE0CC; --ink:#24231F; --red:#B14E30; --muted:#6F685C;
+  --surface:#F4EEE3; --fold:#DED2BC; --line:#CFC3AF; --green:#4F7A55;
+  --sans:"Inter","Helvetica Neue",Helvetica,Arial,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --gutter:clamp(16px,4vw,40px);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font:400 17px/1.55 var(--sans);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+a{color:inherit}
+h1,h2,h3{margin:0;font-weight:600;letter-spacing:-.015em}
+p{margin:0}
+.wrap{max-width:1120px;margin:0 auto;padding:0 var(--gutter)}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.lede{color:var(--muted);max-width:60ch}
+:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* nav */
+header.nav{position:sticky;top:0;z-index:10;background:color-mix(in srgb,var(--paper) 92%,transparent);backdrop-filter:blur(6px);border-bottom:1.5px solid var(--line)}
+.nav .wrap{display:flex;align-items:center;justify-content:space-between;height:60px;gap:16px}
+.wordmark{display:inline-flex;align-items:center;gap:10px;font-weight:600;font-size:17px;text-decoration:none;letter-spacing:-.01em}
+.wordmark svg{width:26px;height:26px;display:block}
+.nav nav{display:flex;align-items:center;gap:22px}
+.nav nav a{font-size:15px;color:var(--muted);text-decoration:none}
+.nav nav a:hover{color:var(--ink)}
+.nav nav a.btn{color:var(--ink);padding:7px 12px;font-size:14px}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 18px;border:1.5px solid var(--ink);font:500 15px/1.2 var(--sans);text-decoration:none;background:transparent;color:var(--ink);cursor:pointer;transition:transform .12s,box-shadow .12s}
+.btn:hover{transform:translate(-1px,-1px);box-shadow:3px 3px 0 var(--ink)}
+.btn:active{transform:none;box-shadow:none}
+.btn.solid{background:var(--ink);color:var(--paper)}
+.btn.light{background:var(--surface);color:var(--ink);border-color:var(--surface)}
+.btn.light:hover{box-shadow:3px 3px 0 var(--red)}
+.btn.ghost-light{color:var(--surface);border-color:var(--surface)}
+.btn.ghost-light:hover{box-shadow:3px 3px 0 var(--red)}
+
+/* hero */
+.hero{padding:30px 0 0}
+.hero-panel{background:var(--ink);color:var(--surface);display:grid;grid-template-columns:1.05fr 1fr;gap:20px;align-items:center;padding:34px}
+.hero h1{font-size:clamp(38px,6vw,58px);line-height:1.03;letter-spacing:-.015em;color:var(--surface)}
+.hero h1 .u{text-decoration:underline;text-decoration-color:var(--red);text-decoration-thickness:.09em;text-underline-offset:.12em}
+.hero p.lead{margin:20px 0 26px;color:#DDD3C0;max-width:46ch;font-size:17px}
+.hero .actions{display:flex;flex-wrap:wrap;gap:10px}
+.hero .src{margin-top:22px;font-family:var(--mono);font-size:11.5px;letter-spacing:.04em;color:#A89F8E}
+.hero svg{width:100%;height:auto;display:block}
+
+/* sections */
+.sec{padding:84px 0;border-top:1.5px dashed var(--line)}
+.sec.first{border-top:0;padding-top:72px}
+.sec-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:26px;flex-wrap:wrap}
+.sec-head h2{font-size:clamp(26px,4vw,34px);line-height:1.15;margin-top:4px}
+.live{font-family:var(--mono);font-size:12px;color:var(--muted);display:inline-flex;align-items:center;gap:7px}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--green);display:inline-block}
+.dot.off{background:var(--muted)}
+.sub{margin:-12px 0 26px;color:var(--muted);max-width:68ch}
+
+/* folded sheet */
+.sheet{min-width:0;position:relative;background:var(--surface);border:1.5px solid var(--ink);padding:18px}
+.sheet::after{content:"";position:absolute;top:-1.5px;right:-1.5px;width:22px;height:22px;border-left:1.5px solid var(--ink);border-bottom:1.5px solid var(--ink);background:linear-gradient(to top right,var(--fold) calc(50% - 1px),var(--ink) calc(50% - 1px),var(--ink) calc(50% + 1px),var(--paper) calc(50% + 1px))}
+.sheet.hot::after{background:linear-gradient(to top right,var(--red) calc(50% - 1px),var(--ink) calc(50% - 1px),var(--ink) calc(50% + 1px),var(--paper) calc(50% + 1px))}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+.kpi .big{font-size:36px;font-weight:600;letter-spacing:-.02em;line-height:1.15;margin-top:8px;font-variant-numeric:tabular-nums}
+.kpi .unit{font-size:15px;font-weight:400;color:var(--muted);margin-left:6px;letter-spacing:0}
+.kpi .cap{font-size:14.5px;color:var(--muted);margin-top:6px;line-height:1.45}
+.tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;margin-left:8px;color:var(--green)}
+.tag.warn{color:var(--red)}
+
+/* forms */
+.form label.eyebrow{display:block;margin:0 0 7px}
+.field{display:block;width:100%;background:var(--paper);border:1.5px solid var(--ink);padding:11px 12px;font:500 16px/1.2 var(--mono);color:var(--ink);border-radius:0}
+.field::placeholder{color:#a79e8c}
+.form .row{display:flex;gap:10px;margin-bottom:16px}
+.form .row .field{flex:1;min-width:0}
+.fine{font-family:var(--mono);font-size:12.5px;line-height:1.5;color:var(--muted);margin-top:12px}
+.fine b{color:var(--ink);font-weight:500}
+.seg{display:inline-flex;border:1.5px solid var(--ink);margin-bottom:18px}
+.seg button{font:500 14px/1 var(--sans);padding:9px 14px;background:transparent;border:0;color:var(--ink);cursor:pointer}
+.seg button[aria-pressed=true]{background:var(--ink);color:var(--paper)}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.fgrid .full{grid-column:1/-1}
+.fgrid .hint{font-family:var(--mono);font-size:11.5px;color:var(--muted);margin-top:5px;line-height:1.4}
+
+.split{display:grid;grid-template-columns:1fr 1.15fr;gap:14px;align-items:start}
+.kv{display:flex;justify-content:space-between;align-items:baseline;gap:14px;padding:10px 0;border-bottom:1px dashed var(--line);font-size:15px;color:var(--muted)}
+.kv:last-child{border-bottom:0}
+.kv b{font:500 15px var(--mono);color:var(--ink);text-align:right}
+.kv b.hl{font-size:20px;font-family:var(--sans);font-weight:600}
+table.t{width:100%;border-collapse:collapse;margin-top:6px}
+table.t th{font:400 11.5px var(--mono);letter-spacing:.07em;text-transform:uppercase;color:var(--muted);text-align:right;padding:8px 6px;border-bottom:1.5px solid var(--ink)}
+table.t th:first-child,table.t td:first-child{text-align:left}
+table.t td{font:500 14px var(--mono);text-align:right;padding:9px 6px;border-bottom:1px dashed var(--line);white-space:nowrap}
+table.t td:first-child{font-family:var(--sans);color:var(--muted);white-space:normal}
+.callout{border-left:3px solid var(--red);padding:2px 0 2px 14px;margin-top:16px;font-size:15px;color:var(--muted)}
+.callout b{color:var(--ink);font-weight:600}
+#wmsg{margin-top:14px;font-family:var(--mono);font-size:13px;color:var(--muted)}
+#wmsg.err{color:var(--red)}
+#wres{margin-top:18px}
+
+/* charts */
+.chart h3{font-size:16px;font-weight:600;letter-spacing:-.005em;margin:2px 0 4px}
+.chart .legend{display:flex;gap:14px;flex-wrap:wrap;font:400 11.5px var(--mono);color:var(--muted);margin-bottom:2px}
+.chart .legend i{display:inline-block;width:10px;height:10px;margin-right:6px;vertical-align:-1px}
+.chart .readout{min-height:18px;font:400 12px var(--mono);color:var(--ink);margin:2px 0}
+.chart svg{display:block;width:100%;height:auto;touch-action:pan-y}
+.chart .note{font-size:13.5px;color:var(--muted);margin-top:6px}
+
+/* bars */
+.bars{margin-top:8px}
+.bar{display:grid;grid-template-columns:150px 1fr 92px;gap:10px;align-items:center;padding:5px 0;font:400 12.5px var(--mono);color:var(--muted)}
+.bar .track{height:16px;position:relative;background:transparent;border:1px dashed var(--line)}
+.bar .fill{position:absolute;inset:0 auto 0 0;background:var(--ink)}
+.bar .fill.neg{background:var(--red)} .bar .fill.pos{background:var(--green)} .bar .fill.zero{background:var(--muted)}
+.bar b{font-weight:500;color:var(--ink);text-align:right}
+
+/* method */
+.method ul{margin:10px 0 0;padding-left:18px;color:var(--muted)}
+.method li{margin:7px 0}
+.method li b{color:var(--ink);font-weight:600}
+code,.mono{font-family:var(--mono);font-size:.88em}
+.cta{display:flex;align-items:center;justify-content:space-between;gap:22px;flex-wrap:wrap}
+.cta p{max-width:60ch}
+footer{border-top:1.5px solid var(--line);padding:34px 0 50px;color:var(--muted);font-size:14px}
+footer .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
+footer p{max-width:70ch}
+
+@media (max-width:900px){
+  .hero-panel{grid-template-columns:1fr;padding:26px 22px}
+  .split{grid-template-columns:1fr}
+  .grid3{grid-template-columns:repeat(2,1fr)}
+}
+@media (max-width:640px){
+  .nav nav a:not(.btn){display:none}
+  .grid3,.grid2,.fgrid{grid-template-columns:minmax(0,1fr)}
+  .sec{padding:60px 0}
+  .bar{grid-template-columns:96px 1fr 70px}
+  .form .row{flex-direction:column}
+}
+/* motion (hidden reveal state only exists once JS adds .js-motion on <html>) */
+.seg button{transition:background-color .18s,color .18s}
+header.nav{transition:box-shadow .25s}
+header.nav.scrolled{box-shadow:0 10px 20px -16px rgba(36,35,31,.5)}
+.bar .fill{transform-origin:left center}
+.js-motion .rv:not(.in){opacity:0}
+@media (prefers-reduced-motion:no-preference){
+  .loop-ring{animation:pc-dash 1.2s linear infinite}
+  .orbit{transform-box:view-box;transform-origin:230px 175px;animation:pc-spin 14s linear infinite}
+  .loop-core{transform-box:fill-box;transform-origin:center;animation:pc-pulse 4s ease-in-out infinite}
+  .hero.off svg *{animation-play-state:paused}
+  #wmsg:not(.err):not(:empty)::after{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--red);margin-left:8px;vertical-align:2px;animation:pc-blink 1s ease-in-out infinite}
+}
+@keyframes pc-dash{to{stroke-dashoffset:-8}}
+@keyframes pc-spin{to{transform:rotate(360deg)}}
+@keyframes pc-pulse{50%{opacity:.8;transform:scale(1.03)}}
+@keyframes pc-blink{50%{opacity:.15}}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.btn,.seg button,header.nav{transition:none}.js-motion .rv{opacity:1}}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap">
+    <a class="wordmark" href="#top" aria-label="PaperCheck, top of page">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M4 4h17l7 7v17H4z" fill="#F4EEE3" stroke="#24231F" stroke-width="2.4" stroke-linejoin="round"/><path d="M21 4v7h7" fill="#DED2BC" stroke="#24231F" stroke-width="2.4" stroke-linejoin="round"/><path d="M10 19l4 4 8-9" fill="none" stroke="#B14E30" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      PaperCheck
+    </a>
+    <nav aria-label="Main navigation">
+      <a href="#wallet">Wallet</a>
+      <a href="#simulator">Simulator</a>
+      <a href="#stats">Numbers</a>
+      <a href="#distribution">Distribution</a>
+      <a href="#method">Method</a>
+      <a class="btn" href="#wallet">Check</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+<section class="hero">
+  <div class="wrap">
+    <div class="hero-panel">
+      <div>
+        <h1>What does your PAPER <span class="u">really</span> earn?</h1>
+        <p class="lead">Papertrade mints PAPER to the traders who lose, then pays them USDC. PaperCheck reads the chain and tells you what you earn, what it costs to produce, and how long until you break even. Or whether you never will.</p>
+        <div class="actions">
+          <a class="btn light" href="#wallet">Check my wallet</a>
+          <a class="btn ghost-light" href="#simulator">Simulate a farm</a>
+        </div>
+        <p class="src" id="heroSrc">Live HyperEVM chain + protocol snapshot</p>
+      </div>
+      <svg viewBox="40 18 380 314" role="img" aria-label="Diagram of the loop: a losing trade mints PAPER, PAPER is staked, staking pays USDC funded by the next losses.">
+        <circle class="loop-ring" cx="230" cy="175" r="122" fill="none" stroke="#8d8576" stroke-width="1.3" stroke-dasharray="3 5"/>
+        <g fill="#C9BFAC">
+          <path d="M0,-6 L5,5 L-5,5 Z" transform="translate(316.3 88.7) rotate(135)"/>
+          <path d="M0,-6 L5,5 L-5,5 Z" transform="translate(316.3 261.3) rotate(225)"/>
+          <path d="M0,-6 L5,5 L-5,5 Z" transform="translate(143.7 261.3) rotate(315)"/>
+          <path d="M0,-6 L5,5 L-5,5 Z" transform="translate(143.7 88.7) rotate(45)"/>
+        </g>
+        <g class="orbit"><circle cx="344.6" cy="216.7" r="4.5" fill="#B14E30"/><circle cx="115.4" cy="133.3" r="4.5" fill="#B14E30"/></g>
+        <g font-family="Inter,Helvetica,Arial,sans-serif" text-anchor="middle" fill="#F4EEE3">
+          <g><rect x="166" y="30" width="128" height="46" fill="#24231F" stroke="#C9BFAC" stroke-width="1.5"/><text x="230" y="50" font-size="13.5" font-weight="600">You lose</text><text x="230" y="66" font-size="9.5" font-family="IBM Plex Mono,monospace" fill="#C9BFAC">trade closed at a loss</text></g>
+          <g><rect x="288" y="152" width="128" height="46" fill="#24231F" stroke="#C9BFAC" stroke-width="1.5"/><text x="352" y="172" font-size="13.5" font-weight="600">PAPER minted</text><text x="352" y="188" font-size="9.5" font-family="IBM Plex Mono,monospace" fill="#C9BFAC">on the realized loss</text></g>
+          <g><rect x="166" y="274" width="128" height="46" fill="#24231F" stroke="#C9BFAC" stroke-width="1.5"/><text x="230" y="294" font-size="13.5" font-weight="600">Staking</text><text x="230" y="310" font-size="9.5" font-family="IBM Plex Mono,monospace" fill="#C9BFAC">PAPER = share of the pool</text></g>
+          <g><rect x="44" y="152" width="128" height="46" fill="#24231F" stroke="#B14E30" stroke-width="1.5"/><text x="108" y="172" font-size="13.5" font-weight="600">USDC</text><text x="108" y="188" font-size="9.5" font-family="IBM Plex Mono,monospace" fill="#C9BFAC">other traders' losses</text></g>
+          <text class="loop-core" x="230" y="178" font-size="26" font-weight="600">PAPER</text>
+          <text x="230" y="195" font-size="8.5" font-family="IBM Plex Mono,monospace" fill="#C9BFAC" letter-spacing="1">THE LOSS</text><text x="230" y="207" font-size="8.5" font-family="IBM Plex Mono,monospace" fill="#C9BFAC" letter-spacing="1">LOOP</text>
+        </g>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- WALLET -->
+<section class="sec first" id="wallet">
+  <div class="wrap">
+    <div class="sec-head">
+      <div><div class="eyebrow">Wallet</div><h2>Check your wallet</h2></div>
+      <div class="live" id="liveWallet"><i class="dot off"></i><span>Connecting to the chain…</span></div>
+    </div>
+    <form class="sheet form" id="wform" autocomplete="off" novalidate>
+      <label class="eyebrow" for="waddr">Papertrade account address (0x…)</label>
+      <div class="row">
+        <input class="field" id="waddr" name="addr" placeholder="0x0000…0000" spellcheck="false" autocapitalize="off" autocorrect="off" inputmode="text" aria-describedby="wmsg">
+        <button class="btn solid" type="submit">Check</button>
+      </div>
+      <label class="eyebrow" for="wloss">Total realized losses, in $ (optional)</label>
+      <input class="field" id="wloss" type="number" min="0" step="any" placeholder="e.g. 1500" style="max-width:260px">
+      <p class="fine">Read directly from the HyperEVM RPC in your browser. <b>No wallet connection, no signature</b>, and the address is never sent to any PaperCheck server. The losses field is only used to compute your break-even time.</p>
+    </form>
+    <div id="wmsg" role="status" aria-live="polite"></div>
+    <div id="wres" hidden></div>
+  </div>
+</section>
+
+<!-- SIMULATOR -->
+<section class="sec" id="simulator">
+  <div class="wrap">
+    <div class="sec-head">
+      <div><div class="eyebrow">Simulator</div><h2>What does farming PAPER cost?</h2></div>
+      <div class="live" id="liveSim"><i class="dot off"></i><span></span></div>
+    </div>
+    <p class="sub">You lose money to mint, so the real math is: net cost of the farm versus USDC received. Defaults come from the measurements on this page (mint rate, haircut, yield). Change them if you know better.</p>
+    <div class="split">
+      <div class="sheet form">
+        <div class="seg" role="group" aria-label="Farm type">
+          <button type="button" id="pSec" aria-pressed="true">Dry loss</button>
+          <button type="button" id="pStr" aria-pressed="false">Straddle long + short</button>
+        </div>
+        <div class="fgrid">
+          <div><label class="eyebrow" for="sL">Realized loss ($)</label><input class="field" id="sL" type="number" min="0" step="any" value="1000"><p class="hint">Sum of losing closes and liquidations.</p></div>
+          <div><label class="eyebrow" for="sG">Gross gain on the winning side ($)</label><input class="field" id="sG" type="number" min="0" step="any" value="0"><p class="hint">Before haircut. In a straddle, ≈ your loss.</p></div>
+          <div><label class="eyebrow" for="sR">Mint (PAPER per $ lost)</label><input class="field" id="sR" type="number" min="0" step="any"><p class="hint" id="hR"></p></div>
+          <div><label class="eyebrow" for="sH">Haircut on gains (%)</label><input class="field" id="sH" type="number" min="0" step="any"><p class="hint" id="hH"></p></div>
+          <div><label class="eyebrow" for="sY">Yield ($/PAPER/day)</label><input class="field" id="sY" type="number" min="0" step="any"><p class="hint" id="hY"></p></div>
+          <div><label class="eyebrow" for="sD">Dilution (new PAPER, %/day)</label><input class="field" id="sD" type="number" min="0" step="any"><p class="hint" id="hD"></p></div>
+        </div>
+      </div>
+      <div class="sheet hot" aria-live="polite">
+        <div class="eyebrow">Result at the current yield</div>
+        <div class="kv"><span>Net cost of the farm</span><b id="oNet">—</b></div>
+        <div class="kv"><span>PAPER minted</span><b id="oPaper">—</b></div>
+        <div class="kv"><span>Added to staked PAPER</span><b id="oShare">—</b></div>
+        <div class="kv"><span>USDC per day (today)</span><b id="oDay">—</b></div>
+        <div class="kv"><span>Break-even if the yield held</span><b id="oPay">—</b></div>
+        <div class="kv"><span>Break-even with dilution</span><b class="hl" id="oPayD">—</b></div>
+        <div class="kv"><span>Net after 30 days with dilution</span><b id="oMD">—</b></div>
+        <table class="t" aria-label="Yield decline scenarios"><thead><tr><th>If the yield…</th><th>USDC/day</th><th>Break-even</th><th>Net 30 d</th></tr></thead><tbody id="oScen"></tbody></table>
+        <p class="callout" id="oNote"></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- NUMBERS -->
+<section class="sec" id="stats">
+  <div class="wrap">
+    <div class="sec-head">
+      <div><div class="eyebrow">Protocol</div><h2>Papertrade in numbers</h2></div>
+      <div class="live" id="liveCh"><i class="dot off"></i><span></span></div>
+    </div>
+    <div class="grid3" id="kpis"></div>
+
+    <div class="sheet chart" style="margin-top:14px" id="mintBox">
+      <div class="eyebrow">Measured mint rate</div>
+      <h3 style="font-size:22px;margin:6px 0 2px">How much PAPER per $1 lost?</h3>
+      <p class="lede" id="mintTxt" style="font-size:15.5px"></p>
+      <div class="bars" id="mintBars"></div>
+      <p class="note" id="mintNote"></p>
+    </div>
+
+    <div class="grid2" id="charts" style="margin-top:14px"></div>
+  </div>
+</section>
+
+<!-- DISTRIBUTION -->
+<section class="sec" id="distribution">
+  <div class="wrap">
+    <div class="sec-head">
+      <div><div class="eyebrow">Distribution</div><h2>Who wins, who loses</h2></div>
+      <div class="live" id="liveDist"><i class="dot off"></i><span></span></div>
+    </div>
+    <p class="sub" id="distSub"></p>
+    <div class="grid3" id="dkpis"></div>
+    <div class="grid2" style="margin-top:14px">
+      <div class="sheet chart"><div class="eyebrow">Realized PnL per account</div><h3 style="font-size:18px;margin:6px 0 2px">Accounts per bracket</h3><div class="bars" id="histBars"></div><p class="note" id="histNote"></p></div>
+      <div class="sheet chart"><div class="eyebrow">Concentration</div><h3 style="font-size:18px;margin:6px 0 2px">Where the money sits</h3><div id="concBox"></div><p class="note" id="concNote"></p></div>
+    </div>
+  </div>
+</section>
+
+<!-- METHOD -->
+<section class="sec method" id="method">
+  <div class="wrap">
+    <div class="sec-head"><div><div class="eyebrow">Method</div><h2>Where the numbers come from</h2></div></div>
+    <div class="grid2">
+      <div class="sheet">
+        <div class="eyebrow">Sources</div>
+        <ul>
+          <li><b>Chain, live.</b> Circulating PAPER, staked PAPER, and a wallet's balance, staked PAPER and claimable rewards: <code>eth_call</code> requests to the HyperEVM RPC, PAPER contract <code>0xe40f…1c0e</code> and staking contract <code>0xaad6…f016</code>.</li>
+          <li><b>Protocol snapshot</b> (<span id="mAt"></span>). TVL, volume, losses, rewards, users: the public API used by Papertrade's own front end. It is undocumented and may change.</li>
+          <li><b>Distribution.</b> Full crawl of the 694 pages of the public leaderboard (<span id="mN"></span> accounts). The sum of realized PnL (<span id="mSum"></span>) matches the net loss reported by the protocol (<span id="mProt"></span>).</li>
+          <li><b>Mint rate and haircut.</b> Sample of <span id="mT"></span> recent closes from 70 randomly picked active accounts: <span id="mE"></span> loss or liquidation events with a mint.</li>
+        </ul>
+      </div>
+      <div class="sheet">
+        <div class="eyebrow">Limits, read this</div>
+        <ul>
+          <li><b>The yield is a snapshot.</b> Rewards per PAPER = rewards paid ÷ staked PAPER over 24 h. It has already dropped ~<span id="mDiv"></span>× since launch day and depends on other traders' losses.</li>
+          <li><b>PAPER has no price.</b> Non-transferable, not listed: PaperCheck gives it no $ value, only a USDC flow.</li>
+          <li><b>Farming costs real money.</b> The game is zero-sum: your rewards are other people's losses. At 1000x, a liquidation comes fast.</li>
+          <li><b>Realized PnL only.</b> Open positions are not counted in the distribution.</li>
+          <li>PaperCheck is independent and not affiliated with Papertrade, Hyperliquid or PaperStrategy. Nothing here is financial advice.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="sheet" style="margin-top:14px">
+      <div class="cta">
+        <p><b>Leverage without risking your own capital?</b> Crypto prop firms fund the account and you keep a share of the profits. This site's publisher runs a comparison at roya-trading.com. <span class="eyebrow">Publisher's link</span></p>
+        <a class="btn solid" href="https://roya-trading.com" rel="noopener">Compare prop firms</a>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>PaperCheck · Independent, read-only tool. Public data from the HyperEVM chain and Papertrade's API. Not financial advice: high-leverage trading can lose your entire capital.</p>
+    <p class="mono">v1 · snapshot <span id="fAt"></span></p>
+  </div>
+</footer>
+
+<script>
+(() => {
+'use strict';
+
+/* ───────────── Settings ───────────── */
+const CONFIG = {
+  // Optional: URL of a CORS proxy to the Papertrade API (see papercheck-proxy.worker.js).
+  // Empty = snapshot mode + chain reads. Example: 'https://papercheck-proxy.myaccount.workers.dev'
+  API_PROXY: 'https://papercheck-proxy.lesroyalistes9.workers.dev',
+  RPC: ['https://rpc.hyperliquid.xyz/evm']
+};
+const C = { stake: '0xaad6c7b0cc3014fc80ffedae0ed7ce5967b0f016', token: '0xe40f17915daa230324030003a197cdaef2261c0e' };
+const SEL = { stakedBalance: '0x60217267', pendingReward: '0xf40f0f52', balanceOf: '0x70a08231', totalStaked: '0x817b1cd2', totalSupply: '0x18160ddd', acc: '0x939d6237' };
+
+/* ───────────── Snapshot (Oct 13, 2026, 18:39 Bangkok) ───────────── */
+const SNAP = /*@SNAP*/{
+  at: 1791891548877,
+  acc0: '10526305313573693307739196',
+  start: 1791640800000, step: 3600000,
+  tvl: 60.47, lp: 4.913, margin: 8.022, volume: 905.50, open: 1708, fees: 31.293,
+  supply: 6.65927, staked: 6.59000, users: 17333, trades: 445220, liqVol: 28.1, tvlPeak: 137.88,
+  vBTC: 56.46, vETH: 29.71,
+  s: {
+    tvl:[125.14,114.85,116.53,121.46,121.99,122.69,125.48,124.4,104.73,104.89,99.23,95.98,93.86,91.57,89.03,87.86,88.16,85.56,85.09,84.55,83,83.03,80.36,77.81,75.77,69.79,69.4,69.5,67.9,67.95,67.74,66.14,65.44,64.91,64.51,64.34,63.66,62.46,62.42,62.05,61.28,60.67,60.26,59.6,59.01,59.01,59.26,58.56,58.35,58.56,58.96,60.28,60.85,61,60.79,60.94,60.26,61.51,61.9,61.86,61.31,61.48,60.19,60.32,60.97,60.55,61.41,60.82,60.31,60.4],
+    rewards:[0.2,5.922,11.37,15.08,18.288,19.577,22.323,23.887,23.957,23.975,23.998,24.013,24.026,24.067,24.086,24.095,24.474,24.665,24.743,24.827,24.831,24.882,24.931,24.934,24.989,26.055,26.092,26.128,26.147,26.152,26.157,26.181,26.188,26.191,26.197,26.213,26.234,26.24,26.252,26.267,26.277,26.287,26.3,26.308,26.314,26.32,26.346,26.639,27.04,27.064,27.827,28.284,28.364,28.777,28.932,29.162,29.446,29.77,30.733,30.83,31.161,31.181,31.187,31.196,31.2,31.213,31.233,31.252,31.265,31.293],
+    pnl:[-4.602,-11.602,-16.918,-20.786,-24.11,-27.064,-29.304,-29.217,-28.11,-28.359,-28.699,-28.979,-29.614,-30.311,-30.348,-30.432,-30.857,-31.069,-31.143,-31.222,-31.254,-31.287,-31.34,-31.38,-31.456,-32.27,-32.106,-32.246,-32.218,-32.216,-32.157,-32.355,-32.197,-32.138,-32.202,-32.351,-32.367,-32.439,-32.557,-32.359,-32.422,-32.42,-32.378,-32.487,-32.38,-32.52,-32.977,-33.461,-33.895,-33.908,-34.716,-35.168,-35.21,-35.606,-35.772,-35.722,-36.538,-36.786,-37.733,-37.877,-38.123,-37.623,-37.732,-37.864,-37.89,-37.813,-37.925,-37.804,-38.124,-38.412],
+    vol:[77.9,180.1,263.8,345.8,413.4,454.1,490.5,529.6,553.3,564.2,573.4,580.8,586.2,600.3,610.2,618.1,625.3,635.7,647,656.6,661,667.6,673.8,678.4,683.2,689.5,700.5,708.4,714.3,718.9,725.1,733.1,737.3,741.5,746.1,755.6,767,775.5,781.7,786.5,791.1,797.2,803.8,810.6,816.2,821.2,827.3,833.9,836.8,842,847.7,853.5,860.6,866.5,870.5,874.9,877.6,879.8,881.9,884.8,887.2,889,890.9,892.5,894.1,896.1,898.5,900.8,903.7,905.3],
+    users:[11473,11474,11474,12510,12975,13294,13523,13717,13778,13940,14066,14184,14316,14432,14548,14653,14753,14862,14965,15044,15123,15194,15269,15355,15432,15511,15716,15772,15826,15871,15918,15958,15987,16016,16031,16051,16092,16115,16141,16170,16196,16226,16259,16295,16332,16385,16437,16519,16620,16683,16724,16778,16803,16831,16859,16891,16915,16934,16960,16980,17018,17060,17090,17122,17151,17190,17234,17284,17324,17333],
+    supply:[1.188,2.2,2.988,3.544,3.982,4.387,4.702,4.893,5.011,5.05,5.102,5.137,5.174,5.264,5.3,5.318,5.351,5.385,5.404,5.419,5.427,5.445,5.471,5.477,5.485,5.599,5.659,5.721,5.751,5.759,5.766,5.807,5.816,5.821,5.832,5.859,5.892,5.902,5.922,5.941,5.957,5.973,5.992,6.006,6.012,6.025,6.069,6.106,6.135,6.147,6.191,6.22,6.238,6.274,6.291,6.329,6.362,6.398,6.447,6.479,6.509,6.529,6.538,6.552,6.556,6.572,6.598,6.621,6.641,6.659],
+    staked:[1.092,2.082,2.877,3.399,3.851,4.356,4.661,4.871,4.964,4.998,5.047,5.08,5.118,5.191,5.236,5.251,5.29,5.323,5.344,5.359,5.366,5.383,5.411,5.416,5.425,5.492,5.576,5.634,5.66,5.669,5.677,5.713,5.721,5.726,5.74,5.761,5.794,5.806,5.837,5.852,5.872,5.886,5.905,5.918,5.926,5.934,5.974,6.007,6.056,6.077,6.112,6.151,6.167,6.2,6.216,6.247,6.259,6.317,6.361,6.408,6.438,6.459,6.467,6.481,6.486,6.496,6.526,6.553,6.571,6.59]
+  },
+  mint: {
+    n: 370, trades: 855, accounts: 70, rateNow: 24.8, rate24h: 28.9, median: 26.6, p10: 25.2, p90: 30.1, base: 100, haircut: 2,
+    trend: [['24–30 h ago', 30.2, 36], ['18–24 h ago', 28.9, 30], ['12–18 h ago', 27.7, 26], ['6–12 h ago', 25.5, 93], ['3–6 h ago', 25.4, 26], ['last 3 h', 24.8, 27]]
+  },
+  scan: {
+    n: 17287, winners: 2356, losers: 9126, flat: 5805, sumPnl: -38.344, sumGains: 8.058, sumLosses: -46.402,
+    medianLoss: -146.8, medianGain: 66.5, p10: -1917, p90: 6.85, p99: 5373,
+    lose1k: 2224, lose10k: 621, lose100k: 82, win1k: 455, win10k: 105, win100k: 12,
+    top10Win: 0.446, top1Win: 0.582, top1Loss: 0.534, paperTop10: 0.180, paperTop100: 0.569, paperTop1: 0.667, paperMedian: 1183,
+    big: { n: 776, share: 0.889, pnl: -32.9 }, hedged: { n: 29, share: 0.005 },
+    active24h: 6411, withOpen: 790,
+    hist: [['< −$10k', 621, 'neg'], ['−$10k to −$1k', 1603, 'neg'], ['−$1k to −$100', 2874, 'neg'], ['−$100 to −$10', 3117, 'neg'], ['−$10 to 0', 911, 'neg'], ['≈ 0 (nothing realized)', 5805, 'zero'], ['0 to +$10', 700, 'pos'], ['+$10 to +$100', 602, 'pos'], ['+$100 to +$1k', 599, 'pos'], ['+$1k to +$10k', 350, 'pos'], ['> +$10k', 105, 'pos']]
+  }
+}/*@SNAP*/;
+
+/* ───────────── Utilities ───────────── */
+const $ = (s, r = document) => r.querySelector(s);
+const fr = (x, d = 2) => Number(x).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d });
+const sg = x => (x < 0 ? '−' : '');
+const usdx = (x, d = 2) => sg(x) + '$' + fr(Math.abs(x), d);
+function tok(x) {
+  const a = Math.abs(x);
+  if (a >= 1e9) return fr(x / 1e9, 3) + 'B';
+  if (a >= 1e6) return fr(x / 1e6, 2) + 'M';
+  if (a >= 1e3) return fr(x / 1e3, 1) + 'k';
+  return fr(x, 2);
+}
+const pct = (x, d = 1) => fr(x * 100, d) + '%';
+const dFmt = (ms, o) => new Date(ms).toLocaleString('en-GB', o);
+const dShort = ms => dFmt(ms, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+function days(d) {
+  if (d == null || !isFinite(d)) return '—';
+  if (d < 1) return '< 1 day';
+  if (d > 1825) return '> 5 years';
+  return fr(d, d < 10 ? 1 : 0) + ' days';
+}
+function dur(d) { return d < 1 ? fr(d * 24, 0) + ' h' : fr(d, 1) + ' d'; }
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const num = id => { const v = parseFloat($(id).value); return isFinite(v) && v >= 0 ? v : 0; };
+
+/* ───────────── Derived from the snapshot ───────────── */
+function derive() {
+  const s = SNAP.s, n = s.rewards.length, last = n - 1, prev = n - 25;
+  const yw = (a, b) => ((s.rewards[b] - s.rewards[a]) * 1e6) / (((s.staked[a] + s.staked[b]) / 2) * 1e9) / ((b - a) / 24);
+  const d = {
+    n, loss: -s.pnl[last], rew: s.rewards[last],
+    dVol: s.vol[last] - s.vol[prev], dUsers: s.users[last] - s.users[prev],
+    dLoss: s.pnl[prev] - s.pnl[last], dRew: s.rewards[last] - s.rewards[prev],
+    dSupply: s.supply[last] - s.supply[prev], y24: yw(prev, last),
+    yDay1: n >= 25 ? yw(0, 24) : null
+  };
+  d.ret = d.rew / d.loss; d.ret24 = d.dRew / d.dLoss;
+  d.supplyGrowth = d.dSupply / s.supply[prev];
+  return d;
+}
+
+/* ───────────── RPC HyperEVM ───────────── */
+async function rpc(method, params, timeout = 9000) {
+  let err;
+  for (const u of CONFIG.RPC) {
+    const c = new AbortController(), id = setTimeout(() => c.abort(), timeout);
+    try {
+      const r = await fetch(u, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params }), signal: c.signal });
+      const j = await r.json();
+      if (j.error) throw new Error(j.error.message);
+      return j.result;
+    } catch (e) { err = e; } finally { clearTimeout(id); }
+  }
+  throw err;
+}
+const ethCall = (to, data) => rpc('eth_call', [{ to, data }, 'latest']);
+const pad = a => a.toLowerCase().replace(/^0x/, '').padStart(64, '0');
+const e18 = h => Number(BigInt(h)) / 1e18;
+
+const live = { ok: false, totalStaked: SNAP.staked * 1e9, totalSupply: SNAP.supply * 1e9, yLive: null, yWindow: 0, block: null };
+
+function getYield() {
+  if (live.yLive && live.yLive > 1e-5 && live.yLive < 0.05)
+    return { v: live.yLive, label: 'measured on-chain since the snapshot (' + dur(live.yWindow) + ')' };
+  return { v: derive().y24, label: '24 h average before the snapshot of ' + dShort(SNAP.at) };
+}
+
+async function refreshLive() {
+  try {
+    const [ts, sup, acc, bn] = await Promise.all([ethCall(C.stake, SEL.totalStaked), ethCall(C.token, SEL.totalSupply), ethCall(C.stake, SEL.acc), rpc('eth_blockNumber', [])]);
+    live.totalStaked = e18(ts); live.totalSupply = e18(sup); live.block = parseInt(bn, 16);
+    const el = (Date.now() - SNAP.at) / 86400000;
+    if (el >= 0.25) {
+      const dAcc = Number(BigInt(acc) - BigInt(SNAP.acc0)) / 1e27;
+      if (dAcc > 0) { live.yLive = dAcc / el; live.yWindow = el; }
+    }
+    live.ok = true;
+  } catch (e) { live.ok = false; }
+  renderAll();
+}
+
+/* ───────────── Optional proxy ───────────── */
+async function tryProxy() {
+  const base = CONFIG.API_PROXY.replace(/\/$/, '');
+  if (!base) return;
+  try {
+    const [sum, his] = await Promise.all([fetch(base + '/query/protocol/summary').then(r => r.json()), fetch(base + '/query/protocol/history?interval=1h').then(r => r.json())]);
+    const b = x => Number(BigInt(x)) / 1e18;
+    SNAP.tvl = b(sum.balances.tvl) / 1e6; SNAP.lp = b(sum.balances.lp) / 1e6; SNAP.margin = b(sum.balances.margin) / 1e6;
+    SNAP.volume = b(sum.activity.volume) / 1e9; SNAP.open = sum.activity.open; SNAP.fees = b(sum.fees.lifetime) / 1e6;
+    SNAP.supply = b(sum.paper.supply) / 1e9; SNAP.staked = b(sum.paper.staked) / 1e9;
+    SNAP.at = sum.source.at; SNAP.acc0 = sum.paper.accumulator;
+    const c = his.columns, i0 = c.volume.findIndex(v => v > 0);
+    const cut = (k, f) => c[k].slice(i0).map(v => +(v / f).toFixed(3));
+    SNAP.s = { tvl: cut('tvl', 1e6), rewards: cut('stakingRewards', 1e6), pnl: cut('traderPnl', 1e6), vol: cut('volume', 1e9), users: c.users.slice(i0).map(Math.round), supply: cut('paperSupply', 1e9), staked: cut('paperStaked', 1e9) };
+    SNAP.start = his.startMs + i0 * his.intervalMs; SNAP.step = his.intervalMs;
+    SNAP.users = SNAP.s.users[SNAP.s.users.length - 1];
+    SNAP.proxy = true;
+    live.yLive = null;
+    renderAll();
+  } catch (e) { /* keep the snapshot */ }
+}
+
+/* ───────────── Charts ───────────── */
+function lineChart(host, cfg) {
+  const W = 600, H = 240, m = { l: 58, r: 14, t: 12, b: 30 };
+  const n = cfg.series[0].data.length;
+  const X = i => m.l + (W - m.l - m.r) * (i / (n - 1));
+  let lo = Infinity, hi = -Infinity;
+  cfg.series.forEach(s => s.data.forEach(v => { if (v < lo) lo = v; if (v > hi) hi = v; }));
+  if (cfg.zero) lo = Math.min(lo, 0);
+  const sp0 = (hi - lo) || 1; if (!cfg.zero) { lo -= sp0 * .06; } hi += sp0 * .06;
+  const niceTicks = (a, b, cnt) => {
+    const raw = (b - a) / cnt, mag = Math.pow(10, Math.floor(Math.log10(raw))), f = raw / mag;
+    const step = (f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10) * mag;
+    const out = []; for (let v = Math.ceil(a / step) * step; v <= b + step * 1e-6; v += step) out.push(v);
+    return out;
+  };
+  const ticks = niceTicks(lo, hi, 4);
+  const Y = v => m.t + (H - m.t - m.b) * (1 - (v - lo) / (hi - lo));
+  let g = '';
+  ticks.forEach(v => {
+    const y = Y(v);
+    g += `<line x1="${m.l}" x2="${W - m.r}" y1="${y.toFixed(1)}" y2="${y.toFixed(1)}" stroke="#CFC3AF" stroke-dasharray="3 4"/><text x="${m.l - 8}" y="${(y + 4).toFixed(1)}" text-anchor="end" font-family="IBM Plex Mono,monospace" font-size="12.5" fill="#6F685C">${cfg.yfmt(v)}</text>`;
+  });
+  let xt = '';
+  for (let i = 0; i < n; i++) {
+    const d = new Date(SNAP.start + i * SNAP.step);
+    if (d.getHours() === 0 && i > 0 && i < n - 2)
+      xt += `<text x="${X(i).toFixed(1)}" y="${H - 9}" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="12.5" fill="#6F685C">${d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</text>`;
+  }
+  let lines = '';
+  cfg.series.forEach((s, k) => {
+    const pts = s.data.map((v, i) => `${X(i).toFixed(1)},${Y(v).toFixed(1)}`);
+    if (s.fill) lines += `<path d="M${X(0).toFixed(1)},${Y(lo).toFixed(1)} L${pts.join(' L')} L${X(n - 1).toFixed(1)},${Y(lo).toFixed(1)} Z" fill="#DED2BC" opacity=".7"/>`;
+    lines += `<polyline points="${pts.join(' ')}" fill="none" stroke="${s.color}" stroke-width="${s.w || 1.7}" stroke-linejoin="round" stroke-linecap="round"/><circle cx="${X(n - 1).toFixed(1)}" cy="${Y(s.data[n - 1]).toFixed(1)}" r="3.6" fill="${s.color === '#24231F' ? '#B14E30' : s.color}"/>`;
+  });
+  host.innerHTML = `<h3>${cfg.title}</h3><div class="legend">${cfg.series.map(s => `<span><i style="background:${s.color}"></i>${s.name}</span>`).join('')}</div><div class="readout" aria-hidden="true">&nbsp;</div>
+  <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(cfg.aria)}">${g}${xt}${lines}<line class="cur" x1="0" x2="0" y1="${m.t}" y2="${H - m.b}" stroke="#24231F" stroke-width="1" opacity="0"/></svg>${cfg.note ? `<p class="note">${cfg.note}</p>` : ''}`;
+  const svg = host.querySelector('svg'), cur = svg.querySelector('.cur'), ro = host.querySelector('.readout');
+  const move = e => {
+    const r = svg.getBoundingClientRect(), x = (e.clientX - r.left) / r.width * W;
+    const i = Math.max(0, Math.min(n - 1, Math.round((x - m.l) / (W - m.l - m.r) * (n - 1))));
+    cur.setAttribute('x1', X(i)); cur.setAttribute('x2', X(i)); cur.setAttribute('opacity', '.5');
+    ro.textContent = dShort(SNAP.start + i * SNAP.step) + ' · ' + cfg.series.map(s => s.name + ' ' + cfg.yfmt(s.data[i], true)).join(' · ');
+  };
+  svg.addEventListener('pointermove', move);
+  svg.addEventListener('pointerleave', () => { cur.setAttribute('opacity', '0'); ro.innerHTML = '&nbsp;'; });
+}
+
+const barRow = (label, w, val, cls) => `<div class="bar"><span>${label}</span><div class="track"><div class="fill ${cls || ''}" style="width:${Math.max(0, Math.min(100, w)).toFixed(1)}%"></div></div><b>${val}</b></div>`;
+
+/* ───────────── Rendering ───────────── */
+function kpi(label, value, unit, cap, o = {}) {
+  return `<article class="sheet kpi${o.hot ? ' hot' : ''}"><div class="eyebrow">${label}${o.live ? '<span class="tag">live</span>' : ''}</div><div class="big">${value}${unit ? `<span class="unit">${unit}</span>` : ''}</div><p class="cap">${cap}</p></article>`;
+}
+
+function renderStatus() {
+  const snap = 'Snapshot ' + dShort(SNAP.at) + (SNAP.proxy ? ' · live proxy' : '');
+  const chain = live.ok ? `<i class="dot"></i><span>Live · block ${live.block.toLocaleString('en-US')} · ${snap}</span>` : `<i class="dot off"></i><span>Chain unreachable · ${snap}</span>`;
+  ['#liveWallet', '#liveSim', '#liveCh'].forEach(id => { $(id).innerHTML = chain; });
+  $('#liveDist').innerHTML = `<i class="dot off"></i><span>Crawl of ${dShort(SNAP.at)}</span>`;
+  $('#heroSrc').textContent = (live.ok ? 'Live HyperEVM chain' : 'HyperEVM chain unavailable') + ' · snapshot ' + dShort(SNAP.at);
+  $('#fAt').textContent = dShort(SNAP.at);
+  $('#mAt').textContent = dShort(SNAP.at);
+}
+
+function renderKpis() {
+  const d = derive(), y = getYield(), S = SNAP;
+  const stakeRatio = live.totalStaked / live.totalSupply;
+  const cards = [
+    kpi('TVL', '$' + fr(S.tvl, 1), 'M', `Peaked at $${fr(S.tvlPeak, 1)}M right before launch: down ${fr(S.tvlPeak / S.tvl, 1)}× since.`),
+    kpi('Cumulative volume', '$' + fr(S.volume, 0), 'B', `+$${fr(d.dVol, 0)}B in the 24 h before the snapshot. BTC $${fr(S.vBTC, 0)}B · ETH $${fr(S.vETH, 0)}B over 24 h.`),
+    kpi('Users', fr(S.users, 0), '', `+${fr(d.dUsers, 0)} in 24 h. ${fr(SNAP.scan.active24h, 0)} accounts show activity in the last 24 h (leaderboard).`),
+    kpi('Net trader losses', '$' + fr(d.loss, 1), 'M', `$${fr(d.dLoss, 1)}M in 24 h. Traders, as a whole, lose.`, { hot: true }),
+    kpi('Rewards paid to stakers', '$' + fr(d.rew, 1), 'M', `$${fr(d.dRew, 2)}M in 24 h. That is ${pct(d.ret24, 0)} of the last 24 h net losses (${pct(d.ret, 0)} since launch).`),
+    kpi('Tracked LP', '$' + fr(S.lp, 2), 'M', `Trader margin: $${fr(S.margin, 1)}M. Above $5M of LP, the overflow goes to stakers (docs).`),
+    kpi('Circulating PAPER', tok(live.totalSupply), 'PAPER', `+${fr(d.supplyGrowth * 100, 1)}% in 24 h (${tok(d.dSupply * 1e9)} minted), only through losses.`, { live: live.ok }),
+    kpi('Share of PAPER staked', fr(stakeRatio * 100, 2), '%', `${tok(live.totalStaked)} PAPER staked. Almost nobody keeps PAPER outside staking.`, { live: live.ok }),
+    kpi('Yield per PAPER', '$' + fr(y.v, 5), '/day', `${y.label}. Launch day: $${fr(d.yDay1, 4)}/day, about ${fr(d.yDay1 / d.y24, 0)}× more.`, { live: y.label.startsWith('measured') })
+  ];
+  $('#kpis').innerHTML = cards.join('');
+}
+
+function renderMint() {
+  const M = SNAP.mint;
+  $('#mintTxt').textContent = `The docs promise ${M.base} PAPER per $ lost while the tracked LP stays under $2M, then a decay. The LP is at $${fr(SNAP.lp, 1)}M: the measured rate hovers around ${fr(M.rateNow, 0)} PAPER per $ lost, and it keeps dropping hour after hour.`;
+  $('#mintBars').innerHTML = barRow('Base rate (docs)', 100, M.base, 'zero') +
+    M.trend.map(t => barRow(t[0], t[1] / M.base * 100, fr(t[1], 1), '')).join('');
+  $('#mintNote').textContent = `Median of the ${M.n} sampled events (loss or liquidation with a mint): ${fr(M.median, 1)} PAPER per $, with 80% of cases between ${fr(M.p10, 1)} and ${fr(M.p90, 1)}. Measured haircut on gains: ${M.haircut}%. Direct effect: each PAPER now "costs" about ${fr(M.base / M.rateNow, 0)}× more losses than at the base rate.`;
+}
+
+function renderCharts() {
+  const s = SNAP.s, d = derive(), f1 = v => fr(v, 0), host = $('#charts');
+  host.innerHTML = '<div class="sheet chart" id="c1"></div><div class="sheet chart" id="c2"></div><div class="sheet chart" id="c3"></div><div class="sheet chart" id="c4"></div>';
+  lineChart($('#c1'), { title: 'Net trader losses vs staker rewards', aria: 'Cumulative net trader losses and rewards paid to stakers, in millions of dollars, since launch', series: [{ name: 'Net losses', data: s.pnl.map(v => -v), color: '#24231F' }, { name: 'Staker rewards', data: s.rewards, color: '#B14E30' }], yfmt: (v, r) => '$' + fr(v, r ? 1 : 0) + 'M', zero: true, note: `${pct(d.ret, 0)} of net losses have already flowed back to stakers.` });
+  lineChart($('#c2'), { title: 'TVL', aria: 'Protocol TVL in millions of dollars since launch', series: [{ name: 'TVL', data: s.tvl, color: '#24231F', fill: true }], yfmt: (v, r) => '$' + fr(v, r ? 1 : 0) + 'M', note: `Peaked at $${fr(SNAP.tvlPeak, 1)}M before launch; TVL lost more than half in three days.` });
+  lineChart($('#c3'), { title: 'Users', aria: 'Cumulative number of users since launch', series: [{ name: 'Users', data: s.users, color: '#24231F', fill: true }], yfmt: (v, r) => (r ? fr(v, 0) : fr(v / 1000, 0) + 'k'), note: `+${fr(d.dUsers, 0)} users in 24 h.` });
+  lineChart($('#c4'), { title: 'PAPER: circulating vs staked', aria: 'Circulating PAPER and staked PAPER, in billions, since launch', series: [{ name: 'Circulating', data: s.supply, color: '#24231F' }, { name: 'Staked', data: s.staked, color: '#B14E30' }], yfmt: (v, r) => fr(v, r ? 3 : 1) + 'B', zero: true, note: `Supply grew ${fr(d.supplyGrowth * 100, 1)}% in 24 h: every new PAPER dilutes the old ones.` });
+}
+
+function renderDist() {
+  const D = SNAP.scan, n = D.n, nz = D.winners + D.losers;
+  $('#distSub').textContent = `Full crawl of the public leaderboard: ${fr(n, 0)} accounts, realized PnL only. Among accounts that actually realized a gain or a loss, ${fr(D.losers / D.winners, 1)} lose for every 1 that wins.`;
+  $('#dkpis').innerHTML = [
+    kpi('Accounts in profit', pct(D.winners / n, 1), '', `${fr(D.winners, 0)} accounts. Median gain: ${usdx(D.medianGain, 0)}. ${fr(D.win10k, 0)} are above +$10k and ${fr(D.win100k, 0)} above +$100k.`),
+    kpi('Accounts in loss', pct(D.losers / n, 1), '', `${fr(D.losers, 0)} accounts. Median loss: ${usdx(D.medianLoss, 0)}. ${fr(D.lose10k, 0)} are below −$10k and ${fr(D.lose100k, 0)} below −$100k.`, { hot: true }),
+    kpi('Nothing realized', pct(D.flat / n, 1), '', `${fr(D.flat, 0)} accounts deposited or opened without closing (realized PnL ≈ 0).`),
+    kpi('Total gains', '$' + fr(D.sumGains, 1), 'M', `The ${fr(D.winners, 0)} winning accounts add up to $${fr(D.sumGains, 1)}M.`),
+    kpi('Total losses', '$' + fr(-D.sumLosses, 1), 'M', `Net: −$${fr(-D.sumPnl, 1)}M, i.e. the protocol's net loss.`),
+    kpi('Top 10 winners', pct(D.top10Win, 0), 'of gains', `The top 1% of winners capture ${pct(D.top1Win, 0)} of all gains.`)
+  ].join('');
+  $('#histBars').innerHTML = D.hist.map(h => barRow(h[0], h[1] / 5805 * 100, fr(h[1], 0), h[2])).join('');
+  $('#histNote').textContent = `Cumulative realized PnL since launch. Median across all accounts: ≈ −$8. Nearly 3 accounts out of 10 have lost more than $100.`;
+  const conc = [
+    ['Top 1% of PAPER (' + fr(Math.ceil(n * .01), 0) + ' accounts)', D.paperTop1], ['Top 100 of PAPER', D.paperTop100], ['Top 10 of PAPER', D.paperTop10],
+    ['Top 1% of losers → losses', D.top1Loss], ['Top 1% of winners → gains', D.top1Win]
+  ];
+  $('#concBox').innerHTML = `<div class="bars">${conc.map(c => barRow(c[0], c[1] * 100, pct(c[1], 0), '')).join('')}</div>`;
+  $('#concNote').textContent = `PAPER follows the losses: ${pct(D.paperTop1, 0)} of PAPER is held by 1% of accounts. The median account holds ${fr(D.paperMedian, 0)} PAPER, about ${usdx(D.paperMedian * getYield().v, 2)} per day at the current yield. The ${fr(D.big.n, 0)} accounts above 1M PAPER hold ${pct(D.big.share, 0)} of it and lost $${fr(-D.big.pnl, 1)}M on their own; "hedged farm" profiles (realized PnL between −$1k and +$1k with more than 500k PAPER: ${fr(D.hedged.n, 0)} accounts) weigh ${pct(D.hedged.share, 1)} of PAPER.`;
+  $('#mN').textContent = fr(n, 0);
+  $('#mSum').textContent = '−$' + fr(-D.sumPnl, 2) + 'M';
+  $('#mProt').textContent = '−$' + fr(-SNAP.s.pnl[SNAP.s.pnl.length - 1], 2) + 'M';
+}
+
+function renderMethod() {
+  const M = SNAP.mint;
+  $('#mT').textContent = fr(M.trades, 0); $('#mE').textContent = fr(M.n, 0);
+  const d = derive(); $('#mDiv').textContent = fr(d.yDay1 / d.y24, 0);
+}
+
+/* ───────────── Simulator ───────────── */
+// Dilution: total rewards assumed constant, circulating PAPER +g per day => yield per PAPER ÷ (1+g) every day.
+function dilution(net, daily, g) {
+  const q = 1 / (1 + g);
+  const cum = n => (g > 0 ? daily * (1 - Math.pow(q, n)) / (1 - q) : daily * n);
+  const cap = g > 0 ? daily / (1 - q) : Infinity;
+  let payD = 0;
+  if (net > 0) {
+    if (daily <= 0) payD = Infinity;
+    else if (g === 0) payD = net / daily;
+    else { const rhs = 1 - net * (1 - q) / daily; payD = rhs <= 0 ? Infinity : Math.log(rhs) / Math.log(q); }
+  }
+  return { payD, cap, cum };
+}
+let preset = 'sec', touched = { R: false, H: false, Y: false, D: false };
+function syncDefaults() {
+  const y = getYield(), d = derive();
+  if (!touched.R) $('#sR').value = SNAP.mint.rateNow;
+  if (!touched.H) $('#sH').value = SNAP.mint.haircut;
+  if (!touched.Y) $('#sY').value = +y.v.toFixed(6);
+  if (!touched.D) $('#sD').value = +(d.supplyGrowth * 100).toFixed(1);
+  $('#hR').textContent = `Measured: ${fr(SNAP.mint.rateNow, 1)} (docs base: ${SNAP.mint.base}).`;
+  $('#hH').textContent = 'Measured: 2% of the gain on the winning side.';
+  $('#hY').textContent = 'Default: ' + y.label + '.';
+  $('#hD').textContent = `Measured over 24 h: +${fr(d.supplyGrowth * 100, 1)}%. It falls with the mint rate.`;
+}
+function simulate() {
+  const L = num('#sL'), G = num('#sG'), r = num('#sR'), h = num('#sH') / 100, y = num('#sY'), g = num('#sD') / 100;
+  const net = L - G * (1 - h), paper = L * r, daily = paper * y, T = live.totalStaked;
+  const pay = net > 0 ? (daily > 0 ? net / daily : Infinity) : 0;
+  const { payD, cap, cum } = dilution(net, daily, g);
+  $('#oNet').textContent = net > 0 ? usdx(net) : '$0 (gain ≥ loss)';
+  $('#oPaper').textContent = tok(paper) + ' PAPER';
+  $('#oShare').textContent = '+' + fr(paper / (T + paper) * 100, paper / T > 0.01 ? 2 : 4) + '% of staked';
+  $('#oDay').textContent = usdx(daily);
+  $('#oPay').textContent = net > 0 ? days(pay) : 'immediate';
+  $('#oPayD').textContent = net <= 0 ? 'immediate' : (isFinite(payD) ? days(payD) : 'never · cap ' + usdx(cap, 0));
+  $('#oMD').textContent = usdx(cum(30) - Math.max(net, 0));
+  const sc = [[1, 'stays the same'], [.5, 'halves'], [.25, 'drops 4×'], [.1, 'drops 10×']];
+  $('#oScen').innerHTML = sc.map(([k, t]) => { const dd = daily * k, p = net > 0 ? (dd > 0 ? net / dd : Infinity) : 0; return `<tr><td>${t}</td><td>${usdx(dd)}</td><td>${net > 0 ? days(p) : '—'}</td><td>${usdx(dd * 30 - Math.max(net, 0))}</td></tr>`; }).join('');
+  const d = derive();
+  $('#oNote').innerHTML = `The yield per PAPER has already dropped about <b>${fr(d.yDay1 / d.y24, 0)}×</b> since launch day. With dilution, your cumulative rewards have a <b>cap</b> (USDC per day ÷ (1 − 1/(1+g))): a dry loss that is too big never pays back. This is a scenario (constant total rewards), not a forecast. ${preset === 'str' ? '<br><br><b>Straddle:</b> verified on real accounts, PAPER is minted on the losing leg even when the other leg wins, including when both close in the same transaction. The net cost then shrinks to the 2% haircut on the winning leg. But everyone can do it: that is what inflates the supply and collapses the yield. The real cost also depends on execution (entry and exit prices, one leg getting liquidated), which is not modeled here.' : ''}`;
+}
+function setPreset(p) {
+  preset = p;
+  $('#pSec').setAttribute('aria-pressed', p === 'sec'); $('#pStr').setAttribute('aria-pressed', p === 'str');
+  $('#sG').value = p === 'str' ? $('#sL').value : 0;
+  simulate();
+}
+
+/* ───────────── Wallet ───────────── */
+async function lookup(addr, loss) {
+  const msg = $('#wmsg'), box = $('#wres');
+  msg.className = ''; box.hidden = true;
+  if (!/^0x[0-9a-fA-F]{40}$/.test(addr)) { msg.className = 'err'; msg.textContent = 'Invalid address: 0x followed by 40 hex characters.'; return; }
+  msg.textContent = 'Reading the chain…';
+  try {
+    const a = pad(addr);
+    const [st, bal, pend] = await Promise.all([ethCall(C.stake, SEL.stakedBalance + a), ethCall(C.token, SEL.balanceOf + a), ethCall(C.stake, SEL.pendingReward + a)]);
+    const W = { staked: e18(st), balance: e18(bal), pending: e18(pend) };
+    renderWallet(addr, W, loss);
+    msg.textContent = '';
+  } catch (e) {
+    msg.className = 'err'; msg.textContent = 'The HyperEVM RPC is not responding. Try again in a moment.';
+  }
+}
+function renderWallet(addr, W, loss) {
+  const box = $('#wres'), y = getYield(), T = live.totalStaked;
+  const short = addr.slice(0, 6) + '…' + addr.slice(-4);
+  if (W.staked === 0 && W.balance === 0 && W.pending === 0) {
+    box.innerHTML = `<div class="sheet"><div class="eyebrow">${esc(short)}</div><p style="margin-top:8px">No PAPER or rewards found at this address. Make sure it is the address of the account that trades on Papertrade, not another wallet.</p></div>`;
+    box.hidden = false; return;
+  }
+  const daily = W.staked * y.v, share = W.staked / T;
+  const g = derive().supplyGrowth, dl = dilution(loss, daily, g);
+  const pay = loss > 0 && daily > 0 ? dl.payD : null;
+  box.innerHTML = '<div class="grid3">' + [
+    kpi('Staked PAPER', tok(W.staked), 'PAPER', `${fr(share * 100, share < 0.0001 ? 6 : 4)}% of all staked PAPER (${tok(T)}).`, { live: true }),
+    kpi('Claimable rewards', fr(W.pending, 2), 'USDC', 'Available on Papertrade, PAPER page.', { live: true, hot: true }),
+    kpi('USDC per day', '$' + fr(daily, 2), '', `At a yield of $${fr(y.v, 5)} per PAPER per day (${y.label}).`),
+    kpi('USDC per month', '$' + fr(daily * 30, 2), '', `If the yield held for 30 days. With the current PAPER dilution: ${usdx(dl.cum(30), 2)}.`),
+    kpi('Unstaked PAPER', tok(W.balance), 'PAPER', W.balance > 0 ? 'This PAPER earns nothing until it is staked.' : 'All your PAPER is staked.', { live: true }),
+    kpi('Break-even', pay == null ? '—' : (isFinite(pay) ? days(pay) : 'never'), '', pay == null ? 'Enter your realized losses above to compute it.' : `To recover ${usdx(loss, 0)} of losses with the current PAPER dilution (+${fr(g * 100, 1)}%/day). ${isFinite(pay) ? '' : 'Your cumulative rewards cap at ' + usdx(dl.cap, 0) + ' at this pace.'}`, { hot: pay != null && !isFinite(pay) })
+  ].join('') + `</div><p class="callout">Rewards come from other traders' losses: if those slow down, your yield drops. PAPER has no market price, so no $ value is shown, only the USDC flow.</p>`;
+  box.hidden = false;
+}
+
+/* ───────────── Init ───────────── */
+function renderAll() { renderStatus(); renderKpis(); renderMint(); renderCharts(); renderDist(); renderMethod(); syncDefaults(); simulate(); }
+
+document.addEventListener('DOMContentLoaded', () => {
+  renderAll();
+  $('#wform').addEventListener('submit', e => { e.preventDefault(); lookup($('#waddr').value.trim(), num('#wloss')); });
+  ['sL', 'sG', 'sR', 'sH', 'sY', 'sD'].forEach(id => $('#' + id).addEventListener('input', () => {
+    if (id === 'sR') touched.R = true; if (id === 'sH') touched.H = true; if (id === 'sY') touched.Y = true; if (id === 'sD') touched.D = true;
+    if (id === 'sL' && preset === 'str') $('#sG').value = $('#sL').value;
+    simulate();
+  }));
+  $('#pSec').addEventListener('click', () => setPreset('sec'));
+  $('#pStr').addEventListener('click', () => setPreset('str'));
+  try { const w = new URLSearchParams(location.search).get('w'); if (w && /^0x[0-9a-fA-F]{40}$/.test(w)) { $('#waddr').value = w; lookup(w, 0); } } catch (e) { /* ignore */ }
+  refreshLive(); tryProxy();
+});
+})();
+</script>
+<script>
+/* Motion layer, additive only: scroll reveal, count-ups, chart draw, bar growth, simulator flash.
+   Without JS, IntersectionObserver or WAAPI, or with reduced motion, everything stays static and visible. */
+(() => {
+'use strict';
+const d = document, nav = d.querySelector('header.nav');
+// Sticky nav shadow after 10px of scroll (a state, not motion: kept with reduced motion)
+let navOn = null;
+const onScroll = () => { const v = window.scrollY > 10; if (v !== navOn) nav.classList.toggle('scrolled', navOn = v); };
+addEventListener('scroll', onScroll, { passive: true }); onScroll();
+
+const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+// Automated browsers (crawlers, full-page captures that never scroll) get the static page
+if (reduce || navigator.webdriver || !('IntersectionObserver' in window) || !Element.prototype.animate) return;
+d.documentElement.classList.add('js-motion');
+
+const E = 'cubic-bezier(.22,.61,.36,1)', now = () => performance.now();
+const R = '.sheet,.sec-head,.sub', main = d.querySelector('main'), wres = d.getElementById('wres');
+const seen = new Map(), marked = new WeakSet(); // seen: element key -> entrance start time
+let off = false, alive = false;
+
+// Stable key: nearest id + child-index path, so a card re-rendered by renderAll() maps to the same key
+const keyOf = el => { const p = []; while (el && !el.id) { p.unshift([...el.parentElement.children].indexOf(el)); el = el.parentElement; } return (el ? el.id : '') + ':' + p.join('.'); };
+
+// Count the numeric part of a .big value up from 0, keeping prefix/suffix; always ends on the exact original text
+function count(b, t0) {
+  const tn = [...b.childNodes].find(n => n.nodeType === 3 && /\d/.test(n.nodeValue));
+  const m = tn && /^(\D*)(\d[\d,]*(?:\.\d+)?)([^]*)$/.exec(tn.nodeValue);
+  if (!m || now() - t0 > 800) return;
+  const fin = tn.nodeValue, dec = (m[2].split('.')[1] || '').length, v = +m[2].replace(/,/g, ''), cm = m[2].includes(',');
+  if (!(v > 0)) return;
+  const f = x => cm ? x.toLocaleString('en-US', { minimumFractionDigits: dec, maximumFractionDigits: dec }) : x.toFixed(dec);
+  const tick = () => {
+    if (!tn.isConnected) return;
+    const p = Math.min(1, Math.max(0, (now() - t0) / 800));
+    tn.nodeValue = p < 1 ? m[1] + f(v * (1 - Math.pow(1 - p, 3))) + m[3] : fin;
+    if (p < 1) requestAnimationFrame(tick);
+  };
+  tick();
+}
+
+// Entrance of a card (or of a fragment re-rendered inside one). Timed from t0, so a re-render resumes mid-way.
+function play(root, t0, fade) {
+  const el = now() - t0;
+  if (el > 1600) return;
+  const A = (n, kf, dur, at) => n.animate(kf, { duration: dur, delay: at - el, easing: E, fill: 'backwards' });
+  if (fade) A(root, [{ opacity: 0, transform: 'translateY(12px)' }, { opacity: 1, transform: 'none' }], 520, 0);
+  root.querySelectorAll('.big').forEach(b => count(b, t0 + 100));
+  root.querySelectorAll('.bar .fill').forEach(f => { const r = f.closest('.bar'); A(f, [{ transform: 'scaleX(0)' }, { transform: 'none' }], 700, 150 + 45 * [...r.parentElement.children].indexOf(r)); });
+  root.querySelectorAll('svg polyline').forEach(p => {
+    const L = p.getTotalLength ? p.getTotalLength() : 0;
+    if (!L) return;
+    p.style.strokeDasharray = L + 'px';
+    A(p, [{ strokeDashoffset: L + 'px' }, { strokeDashoffset: '0px' }], 900, 100).onfinish = () => { p.style.strokeDasharray = ''; };
+  });
+  root.querySelectorAll('svg path[fill="#DED2BC"]').forEach(p => A(p, [{ opacity: 0 }, { opacity: .7 }], 700, 250));
+  root.querySelectorAll('.chart svg circle').forEach(c => A(c, [{ opacity: 0 }, { opacity: 1 }], 250, 950));
+}
+
+// Reveal once on entering the viewport; cards entering together are staggered
+const io = new IntersectionObserver(es => {
+  alive = true; let i = 0;
+  es.forEach(e => {
+    if (!e.isIntersecting) return;
+    const s = e.target, t0 = now() + Math.min(i++, 5) * 80;
+    io.unobserve(s); seen.set(keyOf(s), t0); s.classList.add('in'); play(s, t0, true);
+  });
+}, { rootMargin: '0px 0px 40px 0px' });
+
+function mark(s) {
+  if (marked.has(s) || s.closest('#wres')) return;
+  marked.add(s);
+  if (off) return;
+  const t0 = seen.get(keyOf(s));
+  if (t0 == null) { s.classList.add('rv'); io.observe(s); } else play(s, t0, true); // already shown: no replay
+}
+const revealAll = () => { off = true; io.disconnect(); d.querySelectorAll('.rv').forEach(s => s.classList.add('in')); };
+setTimeout(() => { if (!alive) revealAll(); }, 2500);
+addEventListener('beforeprint', revealAll);
+
+// Wallet results slide in on every new lookup
+function wresIn() {
+  if (wres.hidden) return;
+  const t0 = now();
+  wres.animate([{ opacity: 0, transform: 'translateY(12px)' }, { opacity: 1, transform: 'none' }], { duration: 480, easing: E });
+  wres.querySelectorAll('.big').forEach(b => count(b, t0 + 120));
+}
+
+// Watch renders (renderAll may run up to 3 times, renderWallet on each lookup)
+main.querySelectorAll(R).forEach(mark);
+new MutationObserver(recs => {
+  const fresh = new Set(), inner = [];
+  let w = false;
+  recs.forEach(r => {
+    if (r.target === wres) w = true;
+    r.addedNodes.forEach(n => {
+      if (n.nodeType !== 1 || !n.isConnected) return;
+      if (n.matches(R)) fresh.add(n); else inner.push(n);
+      n.querySelectorAll(R).forEach(x => fresh.add(x));
+    });
+  });
+  fresh.forEach(mark);
+  inner.forEach(n => {
+    const s = n.closest('.sheet'), t0 = s && !fresh.has(s) && !n.closest('#wres') && seen.get(keyOf(s));
+    if (t0) play(n, t0, false);
+  });
+  if (w) wresIn();
+}).observe(main, { childList: true, subtree: true });
+
+// Hero loop: pause when off-screen
+const hero = d.querySelector('.hero');
+new IntersectionObserver(([e]) => hero.classList.toggle('off', !e.isIntersecting)).observe(hero);
+
+// Simulator: brief flash on the result values that changed after a user input
+const out = d.getElementById('oNet').closest('.sheet'), sim = d.getElementById('simulator'), pv = new WeakMap();
+let armed = -1e9;
+sim.addEventListener('input', () => { armed = now(); }, true);
+sim.addEventListener('click', e => { if (e.target.closest('.seg')) armed = now(); }, true);
+const flash = n => n.animate([{ backgroundColor: 'rgba(177,78,48,.16)', color: '#B14E30' }, { backgroundColor: 'rgba(177,78,48,0)', color: '#24231F' }], { duration: 450, easing: 'ease-out' });
+new MutationObserver(() => {
+  const user = now() - armed < 300;
+  out.querySelectorAll('.kv b,#oScen').forEach(b => {
+    const t = b.textContent;
+    if (user && pv.has(b) && pv.get(b) !== t) (b.id === 'oScen' ? b.querySelectorAll('td:not(:first-child)') : [b]).forEach(flash);
+    pv.set(b, t);
+  });
+}).observe(out, { childList: true, subtree: true, characterData: true });
+})();
+</script>
+</body>
+</html>

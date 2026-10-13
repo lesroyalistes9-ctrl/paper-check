@@ -1,0 +1,7 @@
+{
+  "name": "paper-check",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=20" },
+  "scripts": { "build": "node scripts/build.mjs" }
+}
