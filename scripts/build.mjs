@@ -2,6 +2,7 @@
 // Run by Netlify on each build (daily via a Cloudflare cron that calls the build hook).
 // If any critical fetch fails, the build fails and Netlify keeps the previous deploy live.
 import { readFile, writeFile, mkdir, cp } from 'node:fs/promises';
+import { writeDaily } from './daily.mjs';
 
 const API = process.env.PAPERTRADE_API || 'https://exchange.papertrade.xyz';
 const E18 = 1e18;
@@ -141,5 +142,6 @@ html = html.replace(re, () => '/*@SNAP*/' + JSON.stringify(SNAP) + '/*@SNAP*/');
 await mkdir('dist', { recursive: true });
 await writeFile('dist/index.html', html);
 await cp(new URL('../static/', import.meta.url), 'dist/', { recursive: true });
+await writeDaily(SNAP, 'dist/', new URL('../assets/fonts/', import.meta.url).pathname);
 await writeFile('dist/snapshot.json', JSON.stringify({ builtAt: new Date().toISOString(), at: P.at, users: P.users, tvl: P.tvl, mintRateNow: M.rateNow, accounts: scan.n }, null, 1));
 log(`done in ${((Date.now() - t0) / 1000).toFixed(0)}s · ${scan.n} accounts · mint ${M.rateNow} PAPER/$`);
