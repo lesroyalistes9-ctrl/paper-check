@@ -1,11 +1,11 @@
-// PaperCheck — proxy CORS optionnel (Cloudflare Workers).
-// Sert en lecture seule quelques routes publiques de l'API consommée par le front de Papertrade,
-// avec CORS ouvert et un cache de 30 s pour ne pas la solliciter à chaque visite.
+// PaperCheck — Cloudflare Worker.
+// 1) Read-only CORS proxy for a few public routes of the API used by Papertrade's own front end
+//    (open CORS, 30 s cache so the upstream is not hit on every visit).
+// 2) Daily cron: calls the Netlify build hook (secret BUILD_HOOK) so the site re-crawls the data.
 //
-// Déploiement : Workers & Pages > Create > coller ce fichier > Deploy.
-// Puis dans papercheck.html : CONFIG.API_PROXY = 'https://<ton-worker>.workers.dev'
-//
-// À savoir : ces routes ne sont pas documentées officiellement et peuvent changer ou être limitées.
+// Deploy: upload via the Cloudflare API or paste in the dashboard; set the BUILD_HOOK secret;
+// add a cron trigger. In the site: CONFIG.API_PROXY = 'https://<worker>.workers.dev'.
+// These upstream routes are not officially documented and may change.
 
 const UPSTREAM = 'https://exchange.papertrade.xyz';
 const ALLOW = [
@@ -15,7 +15,7 @@ const ALLOW = [
   /^\/query\/protocol\/queue-summary$/,
   /^\/query\/protocol\/paper\/activity$/
 ];
-const TTL = 30; // secondes
+const TTL = 30; // seconds
 
 const CORS = {
   'access-control-allow-origin': '*',
@@ -24,6 +24,12 @@ const CORS = {
 };
 
 export default {
+  // Cron trigger (see schedules): ask Netlify to rebuild the site with fresh data.
+  async scheduled(event, env, ctx) {
+    if (!env.BUILD_HOOK) return;
+    ctx.waitUntil(fetch(env.BUILD_HOOK, { method: 'POST', body: JSON.stringify({ trigger_title: 'daily refresh' }), headers: { 'content-type': 'application/json' } }));
+  },
+
   async fetch(request, env, ctx) {
     if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: CORS });
     if (request.method !== 'GET') return new Response('Method not allowed', { status: 405, headers: CORS });
